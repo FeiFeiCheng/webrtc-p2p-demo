@@ -1,5 +1,4 @@
-import React, { useState, useRef } from "react";
-import "./App.css";
+import React, { useState, useRef, useEffect } from "react";
 
 interface chat {
   isLocal: boolean;
@@ -7,16 +6,32 @@ interface chat {
   name?: string;
 }
 
-const Chat = () => {
-
+const Chat = ({ client }: { client: any }) => {
   const [chatList, setChatList] = useState<chat[]>([]);
   const textRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    client.on('message', (data: any) => {
+      const { user, text } = data;
+      const content = {
+        isLocal: false,
+        name: user.name,
+        text
+      };
+      setChatList((chatList: any) => {
+        return [...chatList, content]
+      });
+    })
+    // eslint-disable-next-line
+  }, [])
 
   const sendText = () => {
     const content = {
       isLocal: true,
       text: textRef.current?.value
     }
+
+    client.chat(textRef.current?.value);
 
     setChatList((chatList: any) => {
       return [...chatList, content]
